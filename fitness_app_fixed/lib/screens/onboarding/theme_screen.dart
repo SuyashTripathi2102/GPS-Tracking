@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../core/theme/theme_provider.dart';
+import '../../theme/theme_provider.dart';
 import '../home/home_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -28,13 +28,7 @@ class ThemeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
-    final themeModeString = themeProvider.themeMode == ThemeMode.light
-        ? 'light'
-        : themeProvider.themeMode == ThemeMode.dark
-        ? 'dark'
-        : 'system';
-
-    void selectTheme(String? theme) {
+    void selectTheme(AppTheme? theme) {
       if (theme != null) {
         themeProvider.setTheme(theme);
       }
@@ -92,63 +86,69 @@ class ThemeScreen extends StatelessWidget {
                 ),
                 const SizedBox(height: 40),
                 // Animated mobile mockup preview
-                AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: 200,
-                  height: 400,
-                  decoration: BoxDecoration(
-                    color: themeProvider.themeMode == ThemeMode.dark
-                        ? Colors.black
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(32),
-                    border: Border.all(width: 4, color: Colors.black),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 16,
-                          decoration: BoxDecoration(
-                            color: themeProvider.themeMode == ThemeMode.dark
-                                ? Colors.grey[800]
-                                : Colors.grey[300],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Row(
-                          children: List.generate(
-                            3,
-                            (index) => Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              width: 40,
-                              height: 40,
+                Builder(
+                  builder: (context) {
+                    final theme = Theme.of(context);
+                    final isDark = theme.brightness == Brightness.dark;
+                    final mockupBg = isDark ? Colors.grey[900] : Colors.white;
+                    final mockupBorder = isDark ? Colors.white : Colors.black;
+                    final mockupScreen = isDark
+                        ? Colors.grey[800]
+                        : Colors.grey[300];
+                    final mockupRow = isDark
+                        ? Colors.grey[900]
+                        : Colors.grey[200];
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      width: 200,
+                      height: 400,
+                      decoration: BoxDecoration(
+                        color: mockupBg,
+                        borderRadius: BorderRadius.circular(32),
+                        border: Border.all(width: 4, color: mockupBorder),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 80,
+                              height: 16,
                               decoration: BoxDecoration(
-                                color: themeProvider.themeMode == ThemeMode.dark
-                                    ? Colors.grey[900]
-                                    : Colors.grey[200],
-                                borderRadius: BorderRadius.circular(12),
+                                color: mockupScreen,
+                                borderRadius: BorderRadius.circular(8),
                               ),
                             ),
-                          ),
+                            const SizedBox(height: 24),
+                            Row(
+                              children: List.generate(
+                                3,
+                                (index) => Container(
+                                  margin: const EdgeInsets.only(right: 8),
+                                  width: 40,
+                                  height: 40,
+                                  decoration: BoxDecoration(
+                                    color: mockupRow,
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                            Container(
+                              width: double.infinity,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                color: mockupScreen,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 24),
-                        Container(
-                          width: double.infinity,
-                          height: 32,
-                          decoration: BoxDecoration(
-                            color: themeProvider.themeMode == ThemeMode.dark
-                                ? Colors.grey[800]
-                                : Colors.grey[300],
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                      ),
+                    );
+                  },
                 ),
                 const SizedBox(height: 24),
                 // Theme color selection row
@@ -156,7 +156,7 @@ class ThemeScreen extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     InkWell(
-                      onTap: () => themeProvider.setTheme('light'),
+                      onTap: () => themeProvider.setTheme(AppTheme.light),
                       borderRadius: BorderRadius.circular(18),
                       child: Column(
                         children: [
@@ -185,7 +185,7 @@ class ThemeScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 24),
                     InkWell(
-                      onTap: () => themeProvider.setTheme('dark'),
+                      onTap: () => themeProvider.setTheme(AppTheme.dark),
                       borderRadius: BorderRadius.circular(18),
                       child: Column(
                         children: [
@@ -213,7 +213,7 @@ class ThemeScreen extends StatelessWidget {
                     ),
                     const SizedBox(width: 24),
                     InkWell(
-                      onTap: () => themeProvider.setTheme('system'),
+                      onTap: () => themeProvider.setTheme(AppTheme.system),
                       borderRadius: BorderRadius.circular(18),
                       child: Column(
                         children: [
@@ -258,6 +258,7 @@ class ThemeScreen extends StatelessWidget {
                               ? 'dark'
                               : 'system',
                         );
+                        // Only now set onboarded flag!
                         await prefs.setBool('onboarded_${user.uid}', true);
                         // Firestore
                         await FirebaseFirestore.instance

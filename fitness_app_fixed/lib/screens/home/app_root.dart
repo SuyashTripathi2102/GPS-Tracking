@@ -4,24 +4,28 @@ import '../activity/exercise_screen.dart';
 import '../history_screen.dart';
 import '../../widgets/bottom_nav.dart';
 import '../devices/device_screen.dart';
+import '../profile_screen.dart';
+// If you have a real LeaderboardScreen, import it here, otherwise keep the mock for now.
+// import '../leaderboard/leaderboard_screen.dart';
 
 class AppRoot extends StatefulWidget {
-  static final GlobalKey<_AppRootState> appRootKey = GlobalKey<_AppRootState>();
-  const AppRoot({super.key});
-
-  /// Call this from anywhere to switch tabs
-  static void switchToTab(int index) {
-    final state = appRootKey.currentState;
-    state?._onNavTapped(index);
-  }
+  final int initialTab;
+  const AppRoot({Key? key, this.initialTab = 0}) : super(key: key);
 
   @override
   State<AppRoot> createState() => _AppRootState();
 }
 
 class _AppRootState extends State<AppRoot> {
-  final PageController _pageController = PageController(initialPage: 0);
+  late PageController _pageController;
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentIndex = widget.initialTab;
+    _pageController = PageController(initialPage: _currentIndex);
+  }
 
   void _onPageChanged(int index) {
     setState(() {
@@ -36,7 +40,6 @@ class _AppRootState extends State<AppRoot> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      key: AppRoot.appRootKey,
       body: PageView(
         controller: _pageController,
         onPageChanged: _onPageChanged,
@@ -44,9 +47,8 @@ class _AppRootState extends State<AppRoot> {
           HomeScreen(),
           ExerciseScreen(),
           HistoryScreen(),
-          DeviceScreen(), // Use the real Devices page
-          const _MockScreen(title: 'Leaderboard'),
-          const _MockScreen(title: 'Profile'),
+          DeviceScreen(),
+          ProfileScreen(), // Now Profile is the 5th tab, matching the nav bar
         ],
       ),
       bottomNavigationBar: BottomNavBar(

@@ -47,4 +47,54 @@ class CustomTheme {
       margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
     ),
   );
+
+  static ThemeData darkTheme = ThemeData(
+    scaffoldBackgroundColor: Colors.black,
+    colorScheme: ColorScheme.dark(
+      primary: primary,
+      secondary: accent,
+      background: Colors.black,
+    ),
+    textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme)
+        .copyWith(
+          bodyLarge: GoogleFonts.poppins(color: Colors.white),
+          bodyMedium: GoogleFonts.poppins(color: Colors.white70),
+          titleLarge: GoogleFonts.poppins(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+    iconTheme: const IconThemeData(color: Colors.white),
+    appBarTheme: const AppBarTheme(
+      backgroundColor: Colors.black,
+      foregroundColor: Colors.white,
+      elevation: 0,
+      titleTextStyle: TextStyle(
+        color: Colors.white,
+        fontSize: 20,
+        fontWeight: FontWeight.w600,
+        fontFamily: 'Poppins',
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: primary,
+        textStyle: GoogleFonts.poppins(
+          fontSize: 16,
+          fontWeight: FontWeight.w600,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        elevation: 4,
+        shadowColor: primary.withOpacity(0.5),
+      ),
+    ),
+    cardTheme: CardThemeData(
+      color: Colors.grey[900],
+      shadowColor: Colors.black26,
+      elevation: 4,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 16),
+    ),
+  );
 }

@@ -84,43 +84,52 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: const Color(0xFFF7F8FF),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Icon(Icons.lock_reset, size: 48, color: Color(0xFF7A5CF5)),
+              Icon(
+                Icons.lock_reset,
+                size: 48,
+                color: theme.colorScheme.primary,
+              ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
                 'Forgot Password',
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.bold,
                   fontSize: 22,
+                  color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
               const SizedBox(height: 4),
-              const Text(
+              Text(
                 'Enter your email to reset password',
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 14,
-                  color: Colors.grey,
+                  color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                 ),
               ),
               const SizedBox(height: 32),
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: theme.cardColor,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 10,
-                      color: Colors.black.withOpacity(0.1),
+                      color: isDark
+                          ? Colors.black26
+                          : Colors.black.withOpacity(0.1),
                       offset: const Offset(0, 6),
                     ),
                   ],
@@ -131,13 +140,22 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       controller: _emailController,
                       decoration: InputDecoration(
                         hintText: 'Email',
-                        prefixIcon: const Icon(Icons.email_outlined),
-                        hintStyle: const TextStyle(fontFamily: 'Poppins'),
+                        prefixIcon: Icon(
+                          Icons.email_outlined,
+                          color: theme.iconTheme.color,
+                        ),
+                        hintStyle: TextStyle(
+                          fontFamily: 'Poppins',
+                          color: theme.hintColor,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
                       ),
-                      style: const TextStyle(fontFamily: 'Poppins'),
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: theme.textTheme.bodyLarge?.color,
+                      ),
                       keyboardType: TextInputType.emailAddress,
                     ),
                     const SizedBox(height: 16),
@@ -170,12 +188,12 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                 onPressed: () {
                   Navigator.pop(context);
                 },
-                child: const Text(
+                child: Text(
                   'Back to Login',
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 13,
-                    color: Colors.grey,
+                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                   ),
                 ),
               ),

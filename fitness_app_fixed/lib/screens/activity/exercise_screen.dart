@@ -208,7 +208,10 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                         Icon(Icons.watch, size: 28),
                   ),
                   onPressed: () {
-                    AppRoot.switchToTab(3); // Switch to Devices tab
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => AppRoot(initialTab: 3)),
+                    ); // Switch to Devices tab
                   },
                   tooltip: 'Tracker',
                 ),

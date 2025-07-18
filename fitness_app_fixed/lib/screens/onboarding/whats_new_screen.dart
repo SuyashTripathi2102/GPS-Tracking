@@ -6,8 +6,12 @@ class WhatsNewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardColor = theme.cardColor;
+    final iconBg = isDark ? Colors.white10 : Colors.grey[100];
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24.0),
@@ -65,12 +69,14 @@ class WhatsNewScreen extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: cardColor,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
                       blurRadius: 10,
-                      color: Colors.black.withOpacity(0.1),
+                      color: isDark
+                          ? Colors.black26
+                          : Colors.black.withOpacity(0.1),
                       offset: const Offset(0, 6),
                     ),
                   ],
@@ -79,60 +85,70 @@ class WhatsNewScreen extends StatelessWidget {
                   children: [
                     ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: const Color(
-                          0xFF7A5CF5,
-                        ).withOpacity(0.1),
-                        child: const Icon(
+                        backgroundColor: iconBg,
+                        child: Icon(
                           Icons.security,
-                          color: Color(0xFF7A5CF5),
+                          color: theme.colorScheme.primary,
                         ),
                       ),
-                      title: const Text(
+                      title: Text(
                         'New Tracker Account',
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontWeight: FontWeight.bold,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
-                      subtitle: const Text(
+                      subtitle: Text(
                         'Helps secure your activity with sync',
-                        style: TextStyle(fontFamily: 'Poppins'),
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
                       ),
                     ),
                     const Divider(),
                     ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: Colors.blue.withOpacity(0.1),
-                        child: const Icon(Icons.sync, color: Colors.blue),
+                        backgroundColor: iconBg,
+                        child: Icon(Icons.sync, color: Colors.blue),
                       ),
-                      title: const Text(
+                      title: Text(
                         'Faster Syncing',
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontWeight: FontWeight.bold,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
-                      subtitle: const Text(
+                      subtitle: Text(
                         'Real-time activity data with your device',
-                        style: TextStyle(fontFamily: 'Poppins'),
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
                       ),
                     ),
                     const Divider(),
                     ListTile(
                       leading: CircleAvatar(
-                        backgroundColor: Colors.green.withOpacity(0.1),
-                        child: const Icon(Icons.analytics, color: Colors.green),
+                        backgroundColor: iconBg,
+                        child: Icon(Icons.analytics, color: Colors.green),
                       ),
-                      title: const Text(
+                      title: Text(
                         'Enhanced Analytics',
                         style: TextStyle(
                           fontFamily: 'Poppins',
                           fontWeight: FontWeight.bold,
+                          color: theme.textTheme.bodyLarge?.color,
                         ),
                       ),
-                      subtitle: const Text(
+                      subtitle: Text(
                         'Better insights into your fitness journey',
-                        style: TextStyle(fontFamily: 'Poppins'),
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          color: theme.textTheme.bodyMedium?.color,
+                        ),
                       ),
                     ),
                   ],

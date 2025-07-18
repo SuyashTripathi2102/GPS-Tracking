@@ -22,21 +22,66 @@ class _LoginSignupScreenState extends State<LoginSignupScreen> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          final prefs = await SharedPreferences.getInstance();
+          final onboarded = prefs.getBool('hasOnboarded') ?? false;
+          if (!onboarded) {
+            Navigator.pushReplacementNamed(context, '/onboarding');
+          } else {
+            Navigator.pushReplacementNamed(context, '/home');
+          }
+        }
       } else {
         await FirebaseAuth.instance.createUserWithEmailAndPassword(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
-      }
-      final user = FirebaseAuth.instance.currentUser;
-      if (user != null) {
-        final prefs = await SharedPreferences.getInstance();
-        final onboarded = prefs.getBool('hasOnboarded') ?? false;
-        if (!onboarded) {
-          Navigator.pushReplacementNamed(context, '/onboarding');
-        } else {
-          Navigator.pushReplacementNamed(context, '/home');
-        }
+        // Show dialog and redirect to login
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        final dialogTextColor = isDark ? Colors.white : Colors.black;
+        await showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green),
+                const SizedBox(width: 8),
+                Text(
+                  'Success',
+                  style: TextStyle(
+                    color: Colors.green,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ],
+            ),
+            content: Text(
+              'Account created successfully! Please login.',
+              style: TextStyle(color: dialogTextColor, fontFamily: 'Poppins'),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(
+                  'OK',
+                  style: TextStyle(
+                    color: dialogTextColor,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'Poppins',
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+        setState(() {
+          isLogin = true;
+        });
+        // Optionally clear fields
+        _passwordController.clear();
       }
     } on FirebaseAuthException catch (e) {
       setState(() {

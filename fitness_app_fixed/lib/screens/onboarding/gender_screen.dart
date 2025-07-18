@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:fitness_app_fixed/db/profile_db_helper.dart';
 
 class GenderScreen extends StatefulWidget {
   const GenderScreen({super.key});
@@ -20,12 +21,17 @@ class _GenderScreenState extends State<GenderScreen> {
     final dbPath = await getDatabasesPath();
     return openDatabase(
       p.join(dbPath, 'app.db'),
+      version: 1,
       onCreate: (db, version) {
         return db.execute(
           'CREATE TABLE IF NOT EXISTS user_profile(uid TEXT PRIMARY KEY, gender TEXT, theme TEXT, onboarded INTEGER)',
         );
       },
-      version: 1,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        await db.execute(
+          'CREATE TABLE IF NOT EXISTS user_profile(uid TEXT PRIMARY KEY, gender TEXT, theme TEXT, onboarded INTEGER)',
+        );
+      },
     );
   }
 
@@ -38,12 +44,24 @@ class _GenderScreenState extends State<GenderScreen> {
       await FirebaseFirestore.instance.collection('users').doc(user.uid).set({
         'gender': selectedGender!,
       }, SetOptions(merge: true));
-      // SQLite
+      // SQLite (onboarding DB)
       final db = await getDatabase();
       await db.insert('user_profile', {
         'uid': user.uid,
         'gender': selectedGender!,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
+      // Also update main profile DB for profile screen
+      try {
+        await ProfileDBHelper().updateGender(user.uid, selectedGender!);
+        print(
+          'GenderScreen: Updated main profile DB with gender ${selectedGender!} for user ${user.uid}',
+        );
+      } catch (e) {
+        print('GenderScreen: Failed to update main profile DB: $e');
+      }
+      print(
+        'GenderScreen: Saved gender ${selectedGender!} for user ${user.uid}',
+      );
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(builder: (_) => const WhatsNewScreen()),

@@ -334,11 +334,13 @@ class HomeScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(18),
                     margin: const EdgeInsets.only(bottom: 12),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: theme.cardColor,
                       borderRadius: BorderRadius.circular(18),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.04),
+                          color: theme.brightness == Brightness.dark
+                              ? Colors.black26
+                              : Colors.black.withOpacity(0.04),
                           blurRadius: 8,
                           offset: const Offset(0, 2),
                         ),
@@ -349,17 +351,20 @@ class HomeScreen extends StatelessWidget {
                       children: [
                         Row(
                           children: [
-                            const Icon(
+                            Icon(
                               Icons.emoji_events,
-                              color: Color(0xFFFFB300),
+                              color: theme.brightness == Brightness.dark
+                                  ? Colors.amber[200]
+                                  : Color(0xFFFFB300),
                               size: 20,
                             ),
                             const SizedBox(width: 8),
-                            const Text(
+                            Text(
                               "Your Sticker Album",
                               style: TextStyle(
                                 fontWeight: FontWeight.w700,
                                 fontSize: 15,
+                                color: theme.textTheme.bodyLarge?.color,
                               ),
                             ),
                           ],
@@ -439,14 +444,28 @@ class _StickerIconBox extends StatelessWidget {
     : super(key: key);
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bgColor = isDark ? color.withOpacity(0.22) : color;
     return Container(
       width: 40,
       height: 40,
       decoration: BoxDecoration(
-        color: color,
+        color: bgColor,
         borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? Colors.white24 : Colors.black12,
+          width: 1.2,
+        ),
       ),
-      child: Center(child: Text(emoji, style: const TextStyle(fontSize: 22))),
+      child: Center(
+        child: Text(
+          emoji,
+          style: TextStyle(
+            fontSize: 22,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+      ),
     );
   }
 }

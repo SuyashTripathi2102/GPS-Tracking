@@ -22,6 +22,11 @@ class ChallengeCard extends StatelessWidget {
     this.onPressed,
   });
 
+  Color _getReadableTextColor(Color bg) {
+    // Use luminance to determine if background is light or dark
+    return bg.computeLuminance() > 0.6 ? Colors.black : Colors.white;
+  }
+
   @override
   Widget build(BuildContext context) {
     String statusText;
@@ -48,6 +53,10 @@ class ChallengeCard extends StatelessWidget {
         ? Colors.white
         : const Color(0xFF757575);
 
+    final Color textColor = _getReadableTextColor(color);
+    final Color subtitleColor = textColor.withOpacity(0.85);
+    final Color rewardColor = textColor.withOpacity(0.95);
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(18),
@@ -71,23 +80,21 @@ class ChallengeCard extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
+                    color: textColor,
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
                   subtitle,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF757575),
-                  ),
+                  style: TextStyle(fontSize: 13, color: subtitleColor),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   "Reward: 🏆 $reward",
-                  style: const TextStyle(fontSize: 12, color: Colors.black87),
+                  style: TextStyle(fontSize: 12, color: rewardColor),
                 ),
               ],
             ),

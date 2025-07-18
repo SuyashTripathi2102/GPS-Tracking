@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'core/theme/theme_provider.dart';
+import 'theme/theme_provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'utils/notification_helper.dart';
@@ -12,6 +12,7 @@ import 'screens/home/home_screen.dart';
 import 'screens/onboarding/theme_screen.dart';
 import 'screens/devices/device_screen.dart';
 import 'screens/devices/bluetooth_scan_page.dart';
+import 'theme/theme.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -22,7 +23,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider('system')),
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         // Add other providers here if needed
       ],
       child: const MyApp(),
@@ -30,34 +31,18 @@ void main() async {
   );
 }
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  bool _notificationsInitialized = false;
-
-  @override
   Widget build(BuildContext context) {
-    // Only initialize notifications once, after the first frame and when context is available
-    if (!_notificationsInitialized && navigatorKey.currentContext != null) {
-      _notificationsInitialized = true;
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await NotificationHelper.initialize(navigatorKey.currentContext!);
-        await NotificationHelper.scheduleDefaultDailyReminder();
-      });
-    }
-
     final themeProvider = Provider.of<ThemeProvider>(context);
     return MaterialApp(
       navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'FitTrack',
-      theme: themeProvider.themeData,
-      darkTheme: themeProvider.darkThemeData,
+      theme: CustomTheme.lightTheme,
+      darkTheme: CustomTheme.darkTheme,
       themeMode: themeProvider.themeMode,
       home: const OnboardingWrapper(),
       routes: {
@@ -67,6 +52,8 @@ class _MyAppState extends State<MyApp> {
         '/onboarding': (context) => const OnboardingWrapper(),
         '/home': (context) => const AppRoot(),
         '/theme': (context) => const ThemeScreen(),
+        '/onboarding/theme': (context) =>
+            const ThemeScreen(), // <-- Added missing route
       },
     );
   }

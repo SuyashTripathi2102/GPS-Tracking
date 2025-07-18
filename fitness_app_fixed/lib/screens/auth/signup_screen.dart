@@ -18,6 +18,7 @@ class _SignupScreenState extends State<SignupScreen> {
         email: _emailController.text.trim(),
         password: _passwordController.text.trim(),
       );
+      await FirebaseAuth.instance.signOut();
       final isDark = Theme.of(context).brightness == Brightness.dark;
       final dialogTextColor = isDark ? Colors.white : Colors.black;
       await showDialog(
@@ -143,147 +144,139 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24),
           child: Container(
             decoration: BoxDecoration(
-              color: Theme.of(context).cardColor,
-              borderRadius: BorderRadius.circular(24),
+              color: theme.cardColor,
+              borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
-                  blurRadius: 16,
-                  offset: const Offset(0, 8),
+                  color: isDark
+                      ? Colors.black26
+                      : Colors.black.withOpacity(0.07),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
                 ),
               ],
             ),
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 36),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
+                Icon(
                   Icons.person_add_alt_1,
-                  size: 48,
-                  color: Color(0xFF7A5CF5),
+                  size: 54,
+                  color: theme.colorScheme.primary,
                 ),
-                const SizedBox(height: 16),
-                const Text(
+                const SizedBox(height: 18),
+                Text(
                   'Create Account',
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontWeight: FontWeight.bold,
-                    fontSize: 22,
+                    fontSize: 24,
+                    color: theme.textTheme.bodyLarge?.color,
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Text(
+                const SizedBox(height: 6),
+                Text(
                   'Sign up to get started',
                   style: TextStyle(
                     fontFamily: 'Poppins',
-                    fontSize: 14,
-                    color: Colors.grey,
+                    fontSize: 15,
+                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
                   ),
                 ),
-                const SizedBox(height: 32),
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? const Color(0xFF23234A)
-                        : Theme.of(context).cardColor,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 10,
-                        color: Colors.black.withOpacity(0.1),
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
+                const SizedBox(height: 28),
+                TextFormField(
+                  controller: _emailController,
+                  decoration: InputDecoration(
+                    hintText: 'Email',
+                    prefixIcon: Icon(
+                      Icons.email_outlined,
+                      color: theme.iconTheme.color,
+                    ),
+                    hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.hintColor,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    filled: true,
+                    fillColor: isDark ? const Color(0xFF181829) : Colors.white,
                   ),
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        controller: _emailController,
-                        decoration: InputDecoration(
-                          hintText: 'Email',
-                          prefixIcon: const Icon(Icons.email_outlined),
-                          hintStyle: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: Theme.of(context).hintColor),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor:
-                              Theme.of(context).brightness == Brightness.dark
-                              ? const Color(0xFF181829)
-                              : Colors.white,
-                        ),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).textTheme.bodyMedium?.color,
-                        ),
-                        keyboardType: TextInputType.emailAddress,
-                      ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: _passwordController,
-                        obscureText: true,
-                        decoration: InputDecoration(
-                          hintText: 'Password',
-                          prefixIcon: const Icon(Icons.lock_outline),
-                          hintStyle: Theme.of(context).textTheme.bodyMedium
-                              ?.copyWith(color: Theme.of(context).hintColor),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          filled: true,
-                          fillColor:
-                              Theme.of(context).brightness == Brightness.dark
-                              ? const Color(0xFF181829)
-                              : Colors.white,
-                        ),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context).textTheme.bodyMedium?.color,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: _signup,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF7A5CF5),
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Sign Up',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.textTheme.bodyMedium?.color,
+                  ),
+                  keyboardType: TextInputType.emailAddress,
+                ),
+                const SizedBox(height: 16),
+                TextFormField(
+                  controller: _passwordController,
+                  obscureText: true,
+                  decoration: InputDecoration(
+                    hintText: 'Password',
+                    prefixIcon: Icon(
+                      Icons.lock_outline,
+                      color: theme.iconTheme.color,
+                    ),
+                    hintStyle: theme.textTheme.bodyMedium?.copyWith(
+                      color: theme.hintColor,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    filled: true,
+                    fillColor: isDark ? const Color(0xFF181829) : Colors.white,
+                  ),
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.textTheme.bodyMedium?.color,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 18),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _signup,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: theme.colorScheme.primary,
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Sign Up',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        color: Colors.white,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Divider(height: 1, color: theme.dividerColor.withOpacity(0.15)),
+                const SizedBox(height: 18),
                 TextButton(
                   onPressed: () {
                     Navigator.pop(context);
                   },
-                  child: const Text(
+                  child: Text(
                     'Already have an account? Login',
                     style: TextStyle(
                       fontFamily: 'Poppins',
-                      fontSize: 13,
-                      color: Colors.grey,
+                      fontSize: 14,
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),

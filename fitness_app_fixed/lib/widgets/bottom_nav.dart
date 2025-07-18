@@ -38,13 +38,22 @@ class BottomNavBar extends StatelessWidget {
           selectedColor: const Color(0xFF6C63FF),
         ),
         SalomonBottomBarItem(
-          icon: Image.asset(
-            'assets/icons/tablet-android.png',
-            width: 22,
-            height: 22,
-            fit: BoxFit.contain,
-            errorBuilder: (context, error, stackTrace) =>
-                Icon(Icons.watch, size: 22),
+          icon: ColorFiltered(
+            colorFilter: ColorFilter.mode(
+              Theme.of(context).iconTheme.color ?? Colors.white,
+              BlendMode.srcIn,
+            ),
+            child: Image.asset(
+              'assets/icons/tablet-android.png',
+              width: 22,
+              height: 22,
+              fit: BoxFit.contain,
+              errorBuilder: (context, error, stackTrace) => Icon(
+                Icons.watch,
+                size: 22,
+                color: Theme.of(context).iconTheme.color,
+              ),
+            ),
           ),
           title: const Text("Devices", style: TextStyle(fontSize: 11)),
           selectedColor: const Color(0xFF6C63FF),
