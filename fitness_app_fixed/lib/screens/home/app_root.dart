@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../home/home_screen.dart';
 import '../activity/exercise_screen.dart';
-import '../history_screen.dart';
+import '../progress/progress_screen.dart';
 import '../../widgets/bottom_nav.dart';
 import '../devices/device_screen.dart';
 import '../profile_screen.dart';
@@ -46,9 +46,9 @@ class _AppRootState extends State<AppRoot> {
         children: [
           HomeScreen(),
           ExerciseScreen(),
-          HistoryScreen(),
+          ProgressScreen(), // <-- Use the new ProgressScreen here
           DeviceScreen(),
-          ProfileScreen(), // Now Profile is the 5th tab, matching the nav bar
+          ProfileScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavBar(

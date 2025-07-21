@@ -7,6 +7,7 @@ import 'package:fitness_app_fixed/data/database/challenge_db.dart';
 import 'package:fitness_app_fixed/services/notification_service.dart';
 import 'package:fitness_app_fixed/screens/sticker_album.dart';
 import 'package:fitness_app_fixed/screens/gamification/leaderboard_screen.dart';
+import 'package:fitness_app_fixed/screens/dashboard/dashboard_dualcircle_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -30,6 +31,23 @@ class HomeScreen extends StatelessWidget {
           ),
         ),
         actions: [
+          IconButton(
+            icon: Icon(
+              Icons.remove_red_eye_outlined, // Preview icon
+              color: theme.brightness == Brightness.dark
+                  ? Colors.white
+                  : Colors.black,
+            ),
+            tooltip: 'Preview New Dashboard',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => const DashboardDualCircleScreen(),
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: Icon(
               Icons.notifications_none_outlined,

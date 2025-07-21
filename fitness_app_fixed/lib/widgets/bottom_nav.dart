@@ -23,12 +23,7 @@ class BottomNavBar extends StatelessWidget {
           selectedColor: const Color(0xFF6C63FF),
         ),
         SalomonBottomBarItem(
-          icon: Image.asset(
-            'assets/animations/walk.gif',
-            width: 22,
-            height: 22,
-            fit: BoxFit.contain,
-          ),
+          icon: Icon(Icons.directions_walk, size: 22),
           title: const Text("Walk", style: TextStyle(fontSize: 11)),
           selectedColor: const Color(0xFF6C63FF),
         ),

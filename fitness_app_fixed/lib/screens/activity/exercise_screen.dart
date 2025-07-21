@@ -5,8 +5,9 @@ import 'package:latlong2/latlong.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:intl/intl.dart';
 import 'package:permission_handler/permission_handler.dart';
-import '../../helpers/db_helper.dart';
+import '../../core/db/db_helper.dart';
 import '../home/app_root.dart';
+import 'dart:ui' as ui;
 
 class ExerciseScreen extends StatefulWidget {
   const ExerciseScreen({super.key});
@@ -29,6 +30,8 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
   Timer? _timer;
   String _mode = 'Walk';
   StreamSubscription<Position>? _locationSubscription;
+  double _mapRotation = 0.0;
+  bool _mapReady = false;
 
   @override
   void initState() {
@@ -54,10 +57,6 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
 
   void _startSession() async {
     _startTime = DateTime.now();
-    _sessionId = await DBHelper.insertSession(
-      userId: userId,
-      startTime: _startTime.toIso8601String(),
-    );
     _pathPoints = [];
     _distance = 0;
     _seconds = 0;
@@ -88,12 +87,31 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
   }
 
   void _stopSession() async {
+    print('Stopping session. Distance: $_distance');
+    if (_distance == 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('No movement detected. Session not saved.'),
+          ),
+        );
+      }
+      _timer?.cancel();
+      setState(() {
+        _isTracking = false;
+        _isPaused = false;
+        _seconds = 0;
+      });
+      return;
+    }
     final endTime = DateTime.now().toIso8601String();
-    await DBHelper.updateSession(
-      sessionId: _sessionId!,
-      endTime: endTime,
-      distance: _distance,
-    );
+    await DBHelper.insertSession({
+      'distance': _distance / 1000, // convert meters to km
+      'timestamp': endTime,
+      'status': 'Completed',
+    });
+    final all = await DBHelper.getAllSessions();
+    print('All sessions after insert: $all');
     _timer?.cancel();
     setState(() {
       _isTracking = false;
@@ -111,6 +129,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
             distanceFilter: 5,
           ),
         ).listen((Position pos) async {
+          print('Location update received: ${pos.latitude}, ${pos.longitude}');
           if (!_isTracking || _isPaused) return;
           final newPoint = LatLng(pos.latitude, pos.longitude);
           if (_pathPoints.isNotEmpty) {
@@ -120,19 +139,16 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
               newPoint,
             );
             _distance += dist;
+            print('Distance updated: $_distance');
           }
           if (!mounted) return;
           setState(() {
             _pathPoints.add(newPoint);
             _currentPosition = newPoint;
           });
-          await DBHelper.insertGPS(
-            sessionId: _sessionId!,
-            lat: newPoint.latitude,
-            lng: newPoint.longitude,
-            timestamp: DateFormat('yyyy-MM-dd HH:mm:ss').format(DateTime.now()),
-          );
+          if (_mapReady) {
           _mapController.move(newPoint, _mapController.camera.zoom);
+          }
         });
   }
 
@@ -145,18 +161,75 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
   double get _coins =>
       (_distance / 1000) * 1.25; // 1000 steps = 1.25 coins (example)
 
+  Widget _compassButton(String label, double degrees) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      child: GestureDetector(
+        onTap: () {
+          _mapController.rotate(degrees * 3.1415926535 / 180);
+        },
+        child: Container(
+          width: 28,
+          height: 28,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: Colors.blueAccent.withOpacity(0.8),
+            borderRadius: BorderRadius.circular(6),
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: 14,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
+    final pastelGreen = const Color(0xFF4CAF50);
+    final pastelRed = const Color(0xFFFF6B81);
+    final pastelBlue = const Color(0xFF6C63FF);
+    final pastelYellow = const Color(0xFFFFE066);
+    final pastelPurple = const Color(0xFFB388FF);
+    final pastelBg = isDark ? const Color(0xFF23272F) : const Color(0xFFF8F9FB);
+    final cardBg = isDark ? const Color(0xFF2D313A) : Colors.white;
+    final textColor = isDark ? Colors.white : const Color(0xFF222B45);
+    final subTextColor = isDark ? Colors.white70 : const Color(0xFF6B7280);
+    final borderColor = isDark ? Colors.white12 : const Color(0xFFDFE2E7);
     return Scaffold(
-      body: Stack(
+      backgroundColor: pastelBg,
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              // Map section
+              SizedBox(
+                height: 260,
+                child: Stack(
         children: [
           FlutterMap(
             mapController: _mapController,
             options: MapOptions(
-              initialCenter: _currentPosition ?? LatLng(35.8997, 14.5146),
+                        initialCenter:
+                            _currentPosition ?? LatLng(35.8997, 14.5146),
               initialZoom: 15.0,
+                        onMapReady: () {
+                          setState(() {
+                            _mapReady = true;
+                          });
+                        },
+                        onPositionChanged: (pos, hasGesture) {
+                          setState(() {
+                            _mapRotation = pos.rotation;
+                          });
+                        },
             ),
             children: [
               TileLayer(
@@ -175,8 +248,6 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                         width: 40,
                         height: 40,
                         fit: BoxFit.contain,
-                        errorBuilder: (context, error, stackTrace) =>
-                            Icon(Icons.location_pin, size: 32),
                       ),
                     ),
                   ],
@@ -193,9 +264,41 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                 ),
             ],
           ),
-          // Add tracker icon button to top right
+                    // Compass overlay (custom needle)
+                    Positioned(
+                      top: 16,
+                      left: 16,
+                      child: GestureDetector(
+                        onTap: () {
+                          if (_mapReady) {
+                            _mapController.rotate(0);
+                            setState(() {
+                              _mapRotation = 0;
+                            });
+                          }
+                        },
+                        child: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.08),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: CustomPaint(
+                            painter: _CompassPainter(rotation: _mapRotation),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Map controls (tracker/device, center location)
           Positioned(
-            top: 40,
+                      top: 16,
             right: 16,
             child: Column(
               children: [
@@ -208,10 +311,92 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                         Icon(Icons.watch, size: 28),
                   ),
                   onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (_) => AppRoot(initialTab: 3)),
-                    ); // Switch to Devices tab
+                              showDialog(
+                                context: context,
+                                builder: (context) {
+                                  return AlertDialog(
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(20),
+                                    ),
+                                    contentPadding: const EdgeInsets.fromLTRB(
+                                      24,
+                                      24,
+                                      24,
+                                      16,
+                                    ),
+                                    content: Column(
+                                      mainAxisSize: MainAxisSize.min,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Row(
+                                          children: [
+                                            Icon(
+                                              Icons.watch,
+                                              size: 32,
+                                              color: Colors.blueAccent,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Text(
+                                              'Device Info',
+                                              style: TextStyle(
+                                                fontFamily: 'Poppins',
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                        const SizedBox(height: 18),
+                                        Text(
+                                          'Device: Smart Band',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Battery: 85%',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Status: Connected',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontFamily: 'Poppins',
+                                            color: Colors.green,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 8),
+                                        Text(
+                                          'Model: X100 Pro',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.of(context).pop(),
+                                        child: const Text(
+                                          'Close',
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              );
                   },
                   tooltip: 'Tracker',
                 ),
@@ -234,176 +419,401 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
               ],
             ),
           ),
-          // Step-to-coin info bar
-          Positioned(
-            bottom: 180,
-            left: 0,
-            right: 0,
-            child: Center(
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: isDark ? Colors.black87 : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 8,
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: const [
-                    Icon(Icons.info_outline, size: 18),
-                    SizedBox(width: 8),
-                    Text('1000 steps = 1.25 coins'),
                   ],
                 ),
               ),
-            ),
-          ),
-          // Bottom sheet controls and stats
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: isDark ? Colors.black : Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.08),
-                    blurRadius: 12,
-                  ),
-                ],
-              ),
-              padding: const EdgeInsets.fromLTRB(24, 18, 24, 32),
+              // Dashboard section
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
                 children: [
                   // Tabs
-                  Row(
-                    // mainAxisAlignment: MainAxisAlignment.center, // Remove this
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 16,
+                      ),
+                      child: Row(
                     children: [
-                      Expanded(
-                        child: _TabIconLabel(
+                          _modeTab(
                           icon: Icons.directions_walk,
                           label: 'Walk',
                           selected: _mode == 'Walk',
+                            color: pastelGreen,
                           onTap: () => setState(() => _mode = 'Walk'),
-                          isDark: isDark,
                         ),
-                      ),
-                      Expanded(
-                        child: _TabIconLabel(
+                          const SizedBox(width: 8),
+                          _modeTab(
                           icon: Icons.directions_run,
                           label: 'Run',
                           selected: _mode == 'Run',
+                            color: pastelRed,
                           onTap: () => setState(() => _mode = 'Run'),
-                          isDark: isDark,
                         ),
-                      ),
-                      Expanded(
-                        child: _TabIconLabel(
+                          const SizedBox(width: 8),
+                          _modeTab(
                           icon: Icons.directions_bike,
                           label: 'Cycle',
                           selected: _mode == 'Cycle',
+                            color: pastelBlue,
                           onTap: () => setState(() => _mode = 'Cycle'),
-                          isDark: isDark,
                         ),
+                        ],
                       ),
-                    ],
                   ),
-                  const SizedBox(height: 18),
                   // Stats
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _StatBox(
+                          _statCard(
+                            value: (_distance / 1000).toStringAsFixed(2),
                         label: 'Kilometers',
-                        value: (_distance / 1000).toStringAsFixed(2),
-                      ),
-                      _StatBox(label: 'Time', value: _formatTime(_seconds)),
-                      _StatBox(
-                        label: 'Coins',
+                            color: pastelGreen,
+                          ),
+                          _statCard(
+                            value: _formatTime(_seconds),
+                            label: 'Time',
+                            color: pastelRed,
+                          ),
+                          _statCard(
                         value: _coins.toStringAsFixed(2),
-                        color: Colors.green,
+                            label: 'Coins Earned',
+                            color: pastelGreen,
+                            icon: Icons.emoji_events,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    // Steps Card
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        decoration: BoxDecoration(
+                          color: cardBg,
+                          borderRadius: BorderRadius.circular(24),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.04),
+                              blurRadius: 4,
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
-                  // Steps
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
                   Text(
-                    '${(_distance * 1.312).toInt()}', // rough steps estimate
+                              '${(_distance * 1.312).toInt()}',
                     style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontWeight: FontWeight.w700,
                       fontSize: 48,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
-                  ),
-                  const Text('Steps'),
-                  const SizedBox(height: 18),
-                  // Controls
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      if (_isTracking)
-                        _CircleButton(
-                          icon: Icons.stop,
-                          label: 'End Activity',
-                          color: Colors.red,
-                          onTap: _stopSession,
-                        ),
-                      GestureDetector(
-                        onTap: () {
-                          if (!_isTracking) {
-                            _startSession();
-                          } else if (_isPaused) {
-                            _resumeSession();
-                          } else {
-                            _pauseSession();
-                          }
-                        },
-                        child: CircleAvatar(
-                          radius: 36,
-                          backgroundColor: Colors.green,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: const [
-                              Icon(
-                                Icons.play_arrow,
-                                color: Colors.white,
-                                size: 32,
+                                color: _mode == 'Walk'
+                                    ? pastelGreen
+                                    : _mode == 'Run'
+                                    ? pastelRed
+                                    : pastelBlue,
                               ),
-                              SizedBox(height: 2),
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Steps',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 18,
+                                    color: textColor,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                Icon(
+                                  Icons.directions_walk,
+                                  color: pastelGreen,
+                                  size: 22,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                                Icon(
+                                  Icons.circle,
+                                  size: 10,
+                                  color: pastelGreen,
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.circle,
+                                  size: 10,
+                                  color: pastelGreen,
+                                ),
+                                const SizedBox(width: 4),
+                                Icon(
+                                  Icons.circle,
+                                  size: 10,
+                                  color: pastelGreen,
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'Goal: 5,000 steps',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontWeight: FontWeight.w400,
+                                fontSize: 14,
+                                color: subTextColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 18),
+                    // Action Buttons
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 32),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        children: [
+                          Column(
+                            children: [
+                      GestureDetector(
+                                onTap: () {},
+                                child: Container(
+                                  width: 64,
+                                  height: 56,
+                                  decoration: BoxDecoration(
+                                    color: isDark
+                                        ? const Color(0xFF23272F)
+                                        : const Color(0xFFF1F3F6),
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                  child: Center(
+                                    child: Icon(
+                                      Icons.camera_alt,
+                                      color: isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[700],
+                                size: 32,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
                               Text(
-                                'GO',
+                                'Photo',
                                 style: TextStyle(
-                                  color: Colors.white,
+                                  fontFamily: 'Poppins',
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 16,
+                                  fontSize: 15,
+                                  color: isDark
+                                      ? Colors.grey[400]
+                                      : Colors.grey[700],
                                 ),
                               ),
                             ],
                           ),
+                          if (!_isTracking)
+                            Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    _startSession();
+                                  },
+                                  child: Container(
+                                    width: 64,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      gradient: const LinearGradient(
+                                        colors: [
+                                          Color(0xFF4CAF50),
+                                          Color(0xFF6C63FF),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.play_arrow,
+                                        color: Colors.white,
+                                        size: 32,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 6),
+                                const Text(
+                                  'GO',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: Color(0xFF4CAF50),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          if (_isTracking)
+                            Column(
+                              children: [
+                                GestureDetector(
+                                  onTap: _stopSession,
+                                  child: Container(
+                                    width: 64,
+                                    height: 56,
+                                    decoration: BoxDecoration(
+                                      color: pastelRed,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                    child: Center(
+                                      child: Icon(
+                                        Icons.stop_rounded,
+                                        color: Colors.white,
+                                        size: 32,
+                                      ),
+                          ),
                         ),
                       ),
-                      _CircleButton(
-                        icon: Icons.camera_alt,
-                        label: 'Photo',
-                        color: Colors.grey[800],
-                        onTap: () {},
+                                const SizedBox(height: 6),
+                                Text(
+                                  'END',
+                                  style: TextStyle(
+                                    fontFamily: 'Poppins',
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    color: pastelRed,
+                                  ),
                       ),
                     ],
                   ),
                 ],
               ),
+                    ),
+                    const SizedBox(height: 18),
+                    // Motivational Text
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Text(
+                        'Every step counts. Let\'s go!',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.w400,
+                          fontSize: 15,
+                          color: subTextColor,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _modeTab({
+    required IconData icon,
+    required String label,
+    required bool selected,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          height: 44,
+          decoration: BoxDecoration(
+            color: selected ? color : Colors.white,
+            border: Border.all(color: color, width: 2),
+            borderRadius: BorderRadius.circular(22),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: selected ? Colors.white : color, size: 22),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 16,
+                  color: selected ? Colors.white : color,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _statCard({
+    required String value,
+    required String label,
+    required Color color,
+    IconData? icon,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: 100,
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF23272F) : Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: isDark ? Colors.white12 : const Color(0xFFDFE2E7),
+          width: 1.5,
+        ),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 2),
+        ],
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 22,
+                  color: color,
+                ),
+              ),
+              if (icon != null) ...[
+                const SizedBox(width: 4),
+                Icon(icon, color: color, size: 18),
+              ],
+            ],
+          ),
+          const SizedBox(height: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontFamily: 'Poppins',
+              fontWeight: FontWeight.w500,
+              fontSize: 13,
+              color: const Color(0xFF6B7280),
             ),
           ),
         ],
@@ -524,4 +934,54 @@ class _TabIconLabel extends StatelessWidget {
       ),
     );
   }
+}
+
+class _CompassPainter extends CustomPainter {
+  final double rotation;
+  _CompassPainter({this.rotation = 0});
+  @override
+  void paint(Canvas canvas, Size size) {
+    canvas.save();
+    final center = Offset(size.width / 2, size.height / 2);
+    canvas.translate(center.dx, center.dy);
+    canvas.rotate(-rotation); // negative to match map rotation
+    canvas.translate(-center.dx, -center.dy);
+    final radius = size.width / 2 - 4;
+    final paintCircle = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+    final paintBorder = Paint()
+      ..color = Colors.grey.shade300
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2;
+    // Draw circle
+    canvas.drawCircle(center, radius, paintCircle);
+    canvas.drawCircle(center, radius, paintBorder);
+    // Draw needle (red - north)
+    final paintNeedleRed = Paint()
+      ..color = Colors.red
+      ..style = PaintingStyle.fill;
+    final paintNeedleGray = Paint()
+      ..color = Colors.grey.shade400
+      ..style = PaintingStyle.fill;
+    final pathRed = ui.Path()
+      ..moveTo(center.dx, center.dy - radius + 6)
+      ..lineTo(center.dx - 8, center.dy)
+      ..lineTo(center.dx + 8, center.dy)
+      ..close();
+    final pathGray = ui.Path()
+      ..moveTo(center.dx, center.dy + radius - 6)
+      ..lineTo(center.dx - 8, center.dy)
+      ..lineTo(center.dx + 8, center.dy)
+      ..close();
+    canvas.drawPath(pathRed, paintNeedleRed);
+    canvas.drawPath(pathGray, paintNeedleGray);
+    // Draw center dot
+    final paintDot = Paint()..color = Colors.grey.shade600;
+    canvas.drawCircle(center, 3, paintDot);
+    canvas.restore();
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
