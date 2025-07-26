@@ -63,7 +63,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
         'status': 'Incomplete',
       },
     ];
-      setState(() {
+    setState(() {
       sessions = [...staticSessions, ...data];
     });
     print('Loaded sessions: $sessions');
@@ -117,20 +117,18 @@ class _ProgressScreenState extends State<ProgressScreen> {
     final totalDistance = getTotalDistance();
     final totalCalories = getTotalCalories();
     final pastelRed = const Color(0xFFFF6B81);
-    final pastelYellow = const Color(0xFFFFE066);
     final pastelGreen = const Color(0xFF4CAF50);
     final pastelPurple = const Color(0xFFB388FF);
     final pastelBlue = const Color(0xFF6C63FF);
-    final pastelBg = isDark ? const Color(0xFF23272F) : const Color(0xFFFFF7ED);
-    final cardBg = isDark ? const Color(0xFF2D313A) : Colors.white;
+    final cardBg = theme.cardColor;
     final textColor = isDark ? Colors.white : const Color(0xFF222B45);
     final subTextColor = isDark ? Colors.white70 : const Color(0xFF6B7280);
     final borderColor = isDark ? Colors.white12 : const Color(0xFFDFE2E7);
 
     return Scaffold(
-      backgroundColor: pastelBg,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
-        backgroundColor: pastelBg,
+        backgroundColor: theme.scaffoldBackgroundColor,
         elevation: 0,
         title: Padding(
           padding: const EdgeInsets.only(top: 8.0),
@@ -175,7 +173,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
               child: IconButton(
                 icon: Icon(
                   isDark ? Icons.wb_sunny : Icons.nightlight_round,
-                  color: pastelYellow,
+                  color: theme.colorScheme.primary.withOpacity(0.8),
                 ),
                 onPressed: () {},
               ),
@@ -205,32 +203,61 @@ class _ProgressScreenState extends State<ProgressScreen> {
                 runSpacing: 8,
                 children: timeFilters.map((filter) {
                   final isSelected = selectedRange == filter;
-                  return ChoiceChip(
-                    label: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 2,
-                      ),
-                      child: Text(
-                        filter,
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: isSelected ? Colors.black : textColor,
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                    ),
+                    child: ChoiceChip(
+                      label: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        child: Text(
+                          filter,
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                            color: isSelected
+                                ? (isDark ? Colors.white : Colors.black)
+                                : textColor,
+                          ),
                         ),
                       ),
+                      selected: isSelected,
+                      selectedColor: theme.colorScheme.primary.withOpacity(
+                        0.15,
+                      ),
+                      backgroundColor: Colors.transparent,
+                      side: BorderSide(
+                        color: isSelected
+                            ? theme.colorScheme.primary
+                            : borderColor,
+                        width: 2,
+                      ),
+                      // Only use avatar for tick mark
+                      avatar: isSelected
+                          ? CircleAvatar(
+                              backgroundColor: isDark
+                                  ? Colors.white
+                                  : theme.colorScheme.primary,
+                              radius: 14,
+                              child: Icon(
+                                Icons.check,
+                                color: isDark
+                                    ? theme.colorScheme.primary
+                                    : Colors.white,
+                                size: 20,
+                                weight: 900, // For bolder icon if supported
+                              ),
+                            )
+                          : null,
+                      onSelected: (_) => setState(() => selectedRange = filter),
+                      elevation: 0,
+                      pressElevation: 0,
                     ),
-                    selected: isSelected,
-                    selectedColor: pastelYellow,
-                    backgroundColor: Colors.transparent,
-                    side: BorderSide(
-                      color: isSelected ? pastelYellow : borderColor,
-                      width: 2,
-                    ),
-                    onSelected: (_) => setState(() => selectedRange = filter),
-                    elevation: 0,
-                    pressElevation: 0,
                   );
                 }).toList(),
               ),
@@ -254,7 +281,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                   Expanded(
                     child: _summaryCard(
                       icon: Icons.local_fire_department,
-                      color: pastelYellow,
+                      color: theme.colorScheme.primary.withOpacity(0.8),
                       title: 'Calories',
                       value: '${totalCalories.toStringAsFixed(0)}',
                       delta: getCaloriesDelta(),
@@ -318,7 +345,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
                       const SizedBox(width: 16),
                       _journeyBadge(
                         icon: Icons.flash_on,
-                        iconBg: pastelYellow,
+                        iconBg: theme.colorScheme.primary.withOpacity(0.8),
                         title: '25km Distance',
                         status: 'Coming Up',
                         statusColor: borderColor,
@@ -377,45 +404,51 @@ class _ProgressScreenState extends State<ProgressScreen> {
                           final isSelected = selectedActivity == a;
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: ChoiceChip(
-                              label: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 2,
-                                ),
-                                child: Text(
-                                  a,
-                                  style: TextStyle(
-                                    fontFamily: 'Poppins',
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 16,
-                                    color: isSelected
-                                        ? Colors.white
-                                        : textColor,
+                            child: Theme(
+                              data: Theme.of(context).copyWith(
+                                splashColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
+                              ),
+                              child: ChoiceChip(
+                                label: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 2,
+                                  ),
+                                  child: Text(
+                                    a,
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontWeight: FontWeight.w700,
+                                      fontSize: 16,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : textColor,
+                                    ),
                                   ),
                                 ),
+                                selected: isSelected,
+                                selectedColor: a == 'Cycling'
+                                    ? pastelBlue
+                                    : a == 'Walking'
+                                    ? pastelPurple
+                                    : pastelGreen,
+                                backgroundColor: Colors.transparent,
+                                side: BorderSide(
+                                  color: isSelected
+                                      ? (a == 'Cycling'
+                                            ? pastelBlue
+                                            : a == 'Walking'
+                                            ? pastelPurple
+                                            : pastelGreen)
+                                      : borderColor,
+                                  width: 2,
+                                ),
+                                onSelected: (_) =>
+                                    setState(() => selectedActivity = a),
+                                elevation: 0,
+                                pressElevation: 0,
                               ),
-                              selected: isSelected,
-                              selectedColor: a == 'Cycling'
-                                  ? pastelBlue
-                                  : a == 'Walking'
-                                  ? pastelPurple
-                                  : pastelGreen,
-                              backgroundColor: Colors.transparent,
-                              side: BorderSide(
-                                color: isSelected
-                                    ? (a == 'Cycling'
-                                          ? pastelBlue
-                                          : a == 'Walking'
-                                          ? pastelPurple
-                                          : pastelGreen)
-                                    : borderColor,
-                                width: 2,
-                              ),
-                              onSelected: (_) =>
-                                  setState(() => selectedActivity = a),
-                              elevation: 0,
-                              pressElevation: 0,
                             ),
                           );
                         }).toList(),
@@ -609,7 +642,7 @@ class _ProgressScreenState extends State<ProgressScreen> {
     return Container(
       width: 150,
       margin: const EdgeInsets.only(bottom: 8),
-              padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: color.withOpacity(0.13),
         borderRadius: BorderRadius.circular(16),

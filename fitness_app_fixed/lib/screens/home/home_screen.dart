@@ -9,8 +9,35 @@ import 'package:fitness_app_fixed/screens/sticker_album.dart';
 import 'package:fitness_app_fixed/screens/gamification/leaderboard_screen.dart';
 import 'package:fitness_app_fixed/screens/dashboard/dashboard_dualcircle_screen.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  int _pagerPage = 0;
+  late final PageController _pagerController;
+
+  // Example user data (replace with real data integration)
+  final int steps = 4200;
+  final int stepTarget = 5000;
+  final double co2Value = 12.3; // Example CO2 value
+  final double distance = 3.7;
+  final int calories = 220;
+
+  @override
+  void initState() {
+    super.initState();
+    _pagerController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pagerController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,32 +49,17 @@ class HomeScreen extends StatelessWidget {
         elevation: 0,
         title: Text(
           'Health Tracker Overview',
+          maxLines: 2,
+          overflow: TextOverflow.visible,
           style: TextStyle(
             fontWeight: FontWeight.bold,
             color: theme.brightness == Brightness.dark
                 ? Colors.white
                 : Colors.black,
-            fontSize: 20,
+            fontSize: 19,
           ),
         ),
         actions: [
-          IconButton(
-            icon: Icon(
-              Icons.remove_red_eye_outlined, // Preview icon
-              color: theme.brightness == Brightness.dark
-                  ? Colors.white
-                  : Colors.black,
-            ),
-            tooltip: 'Preview New Dashboard',
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => const DashboardDualCircleScreen(),
-                ),
-              );
-            },
-          ),
           IconButton(
             icon: Icon(
               Icons.notifications_none_outlined,
@@ -55,7 +67,98 @@ class HomeScreen extends StatelessWidget {
                   ? Colors.white
                   : Colors.black,
             ),
-            onPressed: () {},
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  final theme = Theme.of(context);
+                  final bgColor = theme.colorScheme.background;
+                  final textColor = theme.textTheme.bodyLarge?.color;
+                  return AlertDialog(
+                    backgroundColor: bgColor,
+                    title: Row(
+                      children: [
+                        Icon(Icons.notifications, color: Colors.orange),
+                        SizedBox(width: 8),
+                        Text(
+                          'Notifications',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: textColor,
+                          ),
+                        ),
+                      ],
+                    ),
+                    content: SizedBox(
+                      width: 300,
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          ListTile(
+                            leading: Icon(
+                              Icons.directions_walk,
+                              color: Colors.purple,
+                            ),
+                            title: Text(
+                              'You reached 5,000 steps!',
+                              style: TextStyle(color: textColor),
+                            ),
+                            subtitle: Text(
+                              'Today, 10:00 AM',
+                              style: TextStyle(
+                                color: textColor?.withOpacity(0.7),
+                              ),
+                            ),
+                          ),
+                          ListTile(
+                            leading: Icon(
+                              Icons.emoji_events,
+                              color: Colors.amber,
+                            ),
+                            title: Text(
+                              'New badge earned: Step Master',
+                              style: TextStyle(color: textColor),
+                            ),
+                            subtitle: Text(
+                              'Yesterday, 8:30 PM',
+                              style: TextStyle(
+                                color: textColor?.withOpacity(0.7),
+                              ),
+                            ),
+                          ),
+                          ListTile(
+                            leading: Icon(
+                              Icons.local_fire_department,
+                              color: Colors.redAccent,
+                            ),
+                            title: Text(
+                              'You burned 300 kcal!',
+                              style: TextStyle(color: textColor),
+                            ),
+                            subtitle: Text(
+                              'Yesterday, 7:00 PM',
+                              style: TextStyle(
+                                color: textColor?.withOpacity(0.7),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(
+                          'Close',
+                          style: TextStyle(color: textColor),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
           ),
           IconButton(
             icon: const Icon(Icons.logout, color: Colors.orange),
@@ -166,32 +269,24 @@ class HomeScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Overview Cards Row
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: const [
-                OverviewCard(
-                  icon: Icons.directions_walk,
-                  label: 'Steps',
-                  value: '7,500',
-                  color: Colors.purple,
-                  isSteps: true,
-                  progress: 0.75, // 75% of target
-                ),
-                OverviewCard(
-                  icon: Icons.map,
-                  label: 'Distance',
-                  value: '5.2 km',
-                  color: Colors.blue,
-                ),
-                OverviewCard(
-                  icon: Icons.local_fire_department,
-                  label: 'Kcal',
-                  value: '320',
-                  color: Colors.orange,
-                ),
-              ],
+            // Replace Overview Cards Row with the new dashboard pager
+            LayoutBuilder(
+              builder: (context, constraints) {
+                return DashboardHorizontalPager(
+                  co2Value: co2Value, // Pass CO2 value instead of coins
+                  steps: steps,
+                  stepTarget: stepTarget,
+                  distance: distance,
+                  calories: calories,
+                  isDark: theme.brightness == Brightness.dark,
+                  controller: _pagerController,
+                  onPageChanged: (i) => setState(() => _pagerPage = i),
+                  width: constraints.maxWidth,
+                  useMargin: false,
+                );
+              },
             ),
+            DashboardPagerDots(page: _pagerPage),
             const SizedBox(height: 24),
             Text(
               'Health Modules',
@@ -219,10 +314,16 @@ class HomeScreen extends StatelessWidget {
                   color: Colors.pink,
                 ),
                 ModuleCard(
-                  icon: Icons.bedtime,
+                  icon: Icons.nightlight_round,
                   label: 'Sleep',
                   data: '7 Hr 20 Min',
                   color: Colors.indigo,
+                ),
+                ModuleCard(
+                  icon: Icons.eco,
+                  label: 'CO₂',
+                  data: '12.3 kg CO₂',
+                  color: Colors.blue,
                 ),
                 ModuleCard(
                   icon: Icons.sports_basketball,
@@ -257,7 +358,262 @@ class HomeScreen extends StatelessWidget {
                     vertical: 14,
                   ),
                 ),
-                onPressed: () {},
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) {
+                      final theme = Theme.of(context);
+                      final bgColor = theme.colorScheme.background;
+                      final textColor = theme.textTheme.bodyLarge?.color;
+                      // Demo: local state for modules
+                      return StatefulBuilder(
+                        builder: (context, setState) {
+                          List<Map<String, dynamic>> modules = [
+                            {'icon': Icons.eco, 'label': 'Eco-Friendly'},
+                            {'icon': Icons.nature, 'label': 'Carbon Footprint'},
+                            {
+                              'icon': Icons.sports_basketball,
+                              'label': 'Sports Records',
+                            },
+                            {'icon': Icons.mood, 'label': 'Mood Tracking'},
+                            {'icon': Icons.bloodtype, 'label': 'Blood Oxygen'},
+                          ];
+                          List<Map<String, dynamic>> availableModules = [
+                            {'icon': Icons.water_drop, 'label': 'Hydration'},
+                            {'icon': Icons.monitor_heart, 'label': 'ECG'},
+                            {'icon': Icons.fitness_center, 'label': 'Strength'},
+                          ];
+                          int? selectedReplaceIndex;
+                          String? selectedAddLabel;
+                          return AlertDialog(
+                            backgroundColor: bgColor,
+                            title: Row(
+                              children: [
+                                Icon(Icons.edit, color: Color(0xFF9F71F2)),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Edit Data Card',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: textColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            content: SizedBox(
+                              width:
+                                  MediaQuery.of(context).size.width *
+                                  0.9, // Increased width for readability
+                              child: SingleChildScrollView(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Your Modules:',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: textColor,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 8),
+                                    ...modules.asMap().entries.map((entry) {
+                                      int idx = entry.key;
+                                      var mod = entry.value;
+                                      return Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 2,
+                                        ),
+                                        child: Row(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.center,
+                                          children: [
+                                            Icon(
+                                              mod['icon'],
+                                              color: theme.colorScheme.primary,
+                                            ),
+                                            const SizedBox(width: 12),
+                                            Expanded(
+                                              child: Tooltip(
+                                                message: mod['label'],
+                                                child: Text(
+                                                  mod['label'],
+                                                  style: TextStyle(
+                                                    color: textColor,
+                                                  ),
+                                                  maxLines: 1,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ),
+                                            const SizedBox(width: 8),
+                                            Column(
+                                              mainAxisSize: MainAxisSize.min,
+                                              children: [
+                                                IconButton(
+                                                  icon: Icon(
+                                                    Icons.swap_horiz,
+                                                    color: Colors.blue,
+                                                  ),
+                                                  tooltip: 'Replace',
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      selectedReplaceIndex =
+                                                          idx;
+                                                    });
+                                                  },
+                                                ),
+                                                IconButton(
+                                                  icon: Icon(
+                                                    Icons.delete,
+                                                    color: Colors.red,
+                                                  ),
+                                                  tooltip: 'Remove',
+                                                  onPressed: () {
+                                                    setState(() {
+                                                      modules.removeAt(idx);
+                                                    });
+                                                  },
+                                                ),
+                                              ],
+                                            ),
+                                          ],
+                                        ),
+                                      );
+                                    }),
+                                    const Divider(),
+                                    if (selectedReplaceIndex == null) ...[
+                                      Text(
+                                        'Add Module:',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: textColor,
+                                        ),
+                                      ),
+                                      DropdownButton<String>(
+                                        value: selectedAddLabel,
+                                        hint: Text('Select module'),
+                                        items: availableModules.map((mod) {
+                                          return DropdownMenuItem<String>(
+                                            value: mod['label'],
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  mod['icon'],
+                                                  color:
+                                                      theme.colorScheme.primary,
+                                                ),
+                                                SizedBox(width: 8),
+                                                Text(mod['label']),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) {
+                                          setState(() {
+                                            selectedAddLabel = val;
+                                          });
+                                        },
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: selectedAddLabel == null
+                                            ? null
+                                            : () {
+                                                final mod = availableModules
+                                                    .firstWhere(
+                                                      (m) =>
+                                                          m['label'] ==
+                                                          selectedAddLabel,
+                                                    );
+                                                setState(() {
+                                                  modules.add(mod);
+                                                  selectedAddLabel = null;
+                                                });
+                                              },
+                                        child: Text('Add'),
+                                      ),
+                                    ] else ...[
+                                      Text(
+                                        'Replace with:',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: textColor,
+                                        ),
+                                      ),
+                                      DropdownButton<String>(
+                                        value: selectedAddLabel,
+                                        hint: Text('Select module'),
+                                        items: availableModules.map((mod) {
+                                          return DropdownMenuItem<String>(
+                                            value: mod['label'],
+                                            child: Row(
+                                              children: [
+                                                Icon(
+                                                  mod['icon'],
+                                                  color:
+                                                      theme.colorScheme.primary,
+                                                ),
+                                                SizedBox(width: 8),
+                                                Text(mod['label']),
+                                              ],
+                                            ),
+                                          );
+                                        }).toList(),
+                                        onChanged: (val) {
+                                          setState(() {
+                                            selectedAddLabel = val;
+                                          });
+                                        },
+                                      ),
+                                      ElevatedButton(
+                                        onPressed: selectedAddLabel == null
+                                            ? null
+                                            : () {
+                                                final mod = availableModules
+                                                    .firstWhere(
+                                                      (m) =>
+                                                          m['label'] ==
+                                                          selectedAddLabel,
+                                                    );
+                                                setState(() {
+                                                  modules[selectedReplaceIndex!] =
+                                                      mod;
+                                                  selectedReplaceIndex = null;
+                                                  selectedAddLabel = null;
+                                                });
+                                              },
+                                        child: Text('Replace'),
+                                      ),
+                                      TextButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            selectedReplaceIndex = null;
+                                            selectedAddLabel = null;
+                                          });
+                                        },
+                                        child: Text('Cancel'),
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.of(context).pop(),
+                                child: Text(
+                                  'Close',
+                                  style: TextStyle(color: textColor),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
+                      );
+                    },
+                  );
+                },
                 child: const Text(
                   "Edit Data Card",
                   style: TextStyle(

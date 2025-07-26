@@ -12,7 +12,7 @@ class SessionDetailScreen extends StatelessWidget {
     const distance = '3.42 km';
     const duration = '00:42:15';
     const steps = '4,500';
-    const coins = '4.28';
+    const co2Value = '2.34'; // Example value
 
     return Scaffold(
       appBar: AppBar(title: const Text('Session Detail')),
@@ -65,9 +65,9 @@ class SessionDetailScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Row(
               children: [
-                const Icon(Icons.monetization_on, size: 20),
+                const Icon(Icons.eco, size: 20),
                 SizedBox(width: 8),
-                Text('Coins: $coins'),
+                Text('CO₂: $co2Value kg'),
               ],
             ),
             const SizedBox(height: 32),

@@ -94,18 +94,14 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.lock_reset,
-                size: 48,
-                color: theme.colorScheme.primary,
-              ),
-              const SizedBox(height: 16),
+              Icon(Icons.lock_reset, size: 60, color: Color(0xFFF44336)),
+              const SizedBox(height: 8),
               Text(
                 'Forgot Password',
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.bold,
-                  fontSize: 22,
+                  fontSize: 24,
                   color: theme.textTheme.bodyLarge?.color,
                 ),
               ),
@@ -164,7 +160,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                       child: ElevatedButton(
                         onPressed: _resetPassword,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF7A5CF5),
+                          backgroundColor: const Color(0xFFF44336),
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
@@ -193,7 +189,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   style: TextStyle(
                     fontFamily: 'Poppins',
                     fontSize: 13,
-                    color: theme.textTheme.bodyMedium?.color?.withOpacity(0.7),
+                    color: Color(0xFFF44336),
                   ),
                 ),
               ),

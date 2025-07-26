@@ -307,22 +307,13 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.location_on,
-                  size: 54,
-                  color: theme.colorScheme.primary,
+                Image.asset(
+                  'assets/images/logo_dark.png',
+                  width: 220,
+                  height: 120,
+                  fit: BoxFit.contain,
                 ),
-                const SizedBox(height: 18),
-                Text(
-                  'GPS Tracker',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontWeight: FontWeight.bold,
-                    fontSize: 24,
-                    color: theme.textTheme.bodyLarge?.color,
-                  ),
-                ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 2),
                 Text(
                   'Sign in to your account',
                   style: TextStyle(
@@ -390,7 +381,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       'Forgot Password?',
                       style: TextStyle(
                         fontFamily: 'Poppins',
-                        color: theme.colorScheme.primary,
+                        color: Color(0xFFF44336),
                         fontWeight: FontWeight.w500,
                       ),
                     ),
@@ -402,7 +393,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: _login,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
+                      backgroundColor: Color(0xFFF44336),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -434,7 +425,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 14,
-                      color: theme.colorScheme.primary,
+                      color: Color(0xFFF44336),
                       fontWeight: FontWeight.w500,
                     ),
                   ),

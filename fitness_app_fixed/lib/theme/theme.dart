@@ -12,9 +12,11 @@ class CustomTheme {
     scaffoldBackgroundColor: background,
     colorScheme: ColorScheme.light(
       primary: primary,
-      secondary: accent,
+      secondary: primary,
       background: background,
     ),
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
     textTheme: GoogleFonts.poppinsTextTheme(),
     appBarTheme: AppBarTheme(
       backgroundColor: background,
@@ -52,9 +54,11 @@ class CustomTheme {
     scaffoldBackgroundColor: Colors.black,
     colorScheme: ColorScheme.dark(
       primary: primary,
-      secondary: accent,
+      secondary: primary,
       background: Colors.black,
     ),
+    splashColor: Colors.transparent,
+    highlightColor: Colors.transparent,
     textTheme: GoogleFonts.poppinsTextTheme(ThemeData.dark().textTheme)
         .copyWith(
           bodyLarge: GoogleFonts.poppins(color: Colors.white),

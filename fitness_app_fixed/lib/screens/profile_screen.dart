@@ -10,6 +10,7 @@ import '../theme/theme_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart' as p;
+import 'onboarding/onboarding_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -668,9 +669,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               );
               if (!context.mounted) return;
-              Navigator.of(
-                context,
-              ).pushNamedAndRemoveUntil('/login', (route) => false);
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (_) => const OnboardingWrapper()),
+                (route) => false,
+              );
             }
           },
         ),

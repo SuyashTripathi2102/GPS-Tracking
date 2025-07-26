@@ -30,7 +30,7 @@ class _DashboardDualCircleScreenState extends State<DashboardDualCircleScreen> {
   // Example user data (replace with real data integration)
   final int steps = 4200;
   final int stepTarget = 5000;
-  final int coins = 18;
+  final double co2Value = 12.3; // Example CO2 value in kg
   final double distance = 3.7;
   final int calories = 220;
   final int level = 2; // Level 1-5
@@ -182,9 +182,9 @@ class _DashboardDualCircleScreenState extends State<DashboardDualCircleScreen> {
                                   CircularPercentIndicator(
                                     radius: 90,
                                     lineWidth: 12,
-                                    percent: (coins / 50).clamp(0.0, 1.0),
+                                    percent: (co2Value / 50).clamp(0.0, 1.0),
                                     backgroundColor: Colors.white12,
-                                    progressColor: Colors.greenAccent,
+                                    progressColor: Colors.lightBlueAccent,
                                     circularStrokeCap: CircularStrokeCap.round,
                                   ),
                                   CircularPercentIndicator(
@@ -228,13 +228,13 @@ class _DashboardDualCircleScreenState extends State<DashboardDualCircleScreen> {
                                       child: Container(
                                         padding: const EdgeInsets.all(2),
                                         decoration: BoxDecoration(
-                                          color: Colors.greenAccent,
+                                          color: Colors.lightBlueAccent,
                                           borderRadius: BorderRadius.circular(
                                             16,
                                           ),
                                         ),
                                         child: Icon(
-                                          Icons.attach_money,
+                                          Icons.eco,
                                           size: 10,
                                           color: Colors.black,
                                         ),
@@ -264,11 +264,11 @@ class _DashboardDualCircleScreenState extends State<DashboardDualCircleScreen> {
                                     ),
                                   ),
                                   // Checkmark at end of coin arc if coins target achieved
-                                  if (coins >= 50)
+                                  if (co2Value >= 50)
                                     _ArcEndCheckmark(
                                       radius: 90,
                                       percent: 1.0,
-                                      color: Colors.greenAccent,
+                                      color: Colors.lightBlueAccent,
                                     ),
                                   // Checkmark at end of step arc if step target achieved
                                   if (steps >= stepTarget)
@@ -295,22 +295,22 @@ class _DashboardDualCircleScreenState extends State<DashboardDualCircleScreen> {
                                   Row(
                                     children: [
                                       Icon(
-                                        Icons.attach_money,
-                                        color: Colors.greenAccent,
+                                        Icons.eco,
+                                        color: Colors.lightBlueAccent,
                                         size: 22,
                                       ),
                                       const SizedBox(width: 6),
                                       Text(
-                                        '$coins',
+                                        '$co2Value',
                                         style: GoogleFonts.poppins(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold,
-                                          color: Colors.greenAccent,
+                                          color: Colors.lightBlueAccent,
                                         ),
                                       ),
                                       const SizedBox(width: 4),
                                       Text(
-                                        'coins',
+                                        'CO₂',
                                         style: GoogleFonts.poppins(
                                           fontSize: 14,
                                           color: Colors.white,
@@ -380,18 +380,11 @@ class _DashboardDualCircleScreenState extends State<DashboardDualCircleScreen> {
                       ),
                     ),
                     // Page 3: Friends card (as in your screenshot)
-                    Container(
-                      width: screenWidth,
-                      height: topHeight,
-                      decoration: BoxDecoration(
-                        color: Colors.green[900]?.withOpacity(0.95),
-                        borderRadius: BorderRadius.circular(18),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 30,
+                        vertical: 18,
                       ),
-                      margin: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      padding: const EdgeInsets.all(18),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -443,20 +436,129 @@ class _DashboardDualCircleScreenState extends State<DashboardDualCircleScreen> {
                             textAlign: TextAlign.center,
                           ),
                           const SizedBox(height: 16),
-                          ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.greenAccent,
-                              foregroundColor: Colors.black,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                          Builder(
+                            builder: (buttonContext) => ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.greenAccent,
+                                foregroundColor: Colors.black,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 10,
+                                ),
                               ),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 24,
-                                vertical: 10,
-                              ),
+                              onPressed: () {
+                                showDialog(
+                                  context: buttonContext,
+                                  builder: (context) {
+                                    final theme = Theme.of(context);
+                                    final bgColor =
+                                        theme.colorScheme.background;
+                                    final textColor =
+                                        theme.textTheme.bodyLarge?.color;
+                                    return AlertDialog(
+                                      backgroundColor: bgColor,
+                                      title: Row(
+                                        children: [
+                                          Icon(
+                                            Icons.group,
+                                            color: Colors.green,
+                                          ),
+                                          SizedBox(width: 8),
+                                          Text(
+                                            'Friend Suggestions',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: textColor,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      content: SizedBox(
+                                        width: 300,
+                                        child: Column(
+                                          mainAxisSize: MainAxisSize.min,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            ListTile(
+                                              leading: CircleAvatar(
+                                                child: Text('A'),
+                                              ),
+                                              title: Text(
+                                                'Alex Johnson',
+                                                style: TextStyle(
+                                                  color: textColor,
+                                                ),
+                                              ),
+                                              subtitle: Text(
+                                                '5,200 steps today',
+                                                style: TextStyle(
+                                                  color: textColor?.withOpacity(
+                                                    0.7,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            ListTile(
+                                              leading: CircleAvatar(
+                                                child: Text('M'),
+                                              ),
+                                              title: Text(
+                                                'Maria Lee',
+                                                style: TextStyle(
+                                                  color: textColor,
+                                                ),
+                                              ),
+                                              subtitle: Text(
+                                                'Earned Step Master badge',
+                                                style: TextStyle(
+                                                  color: textColor?.withOpacity(
+                                                    0.7,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            ListTile(
+                                              leading: CircleAvatar(
+                                                child: Text('S'),
+                                              ),
+                                              title: Text(
+                                                'Sam Patel',
+                                                style: TextStyle(
+                                                  color: textColor,
+                                                ),
+                                              ),
+                                              subtitle: Text(
+                                                '3,800 steps today',
+                                                style: TextStyle(
+                                                  color: textColor?.withOpacity(
+                                                    0.7,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.of(context).pop(),
+                                          child: Text(
+                                            'Close',
+                                            style: TextStyle(color: textColor),
+                                          ),
+                                        ),
+                                      ],
+                                    );
+                                  },
+                                );
+                              },
+                              child: const Text('Find Friends'),
                             ),
-                            onPressed: () {},
-                            child: const Text('Find Friends'),
                           ),
                         ],
                       ),
@@ -466,7 +568,7 @@ class _DashboardDualCircleScreenState extends State<DashboardDualCircleScreen> {
               ),
             ),
             // Dots indicator below the card
-            _DashboardPagerDots(page: _pagerPage),
+            DashboardPagerDots(page: _pagerPage),
             // Rest of the dashboard content (ads, cards, etc.)
             Container(
               width: double.infinity,
@@ -1408,8 +1510,8 @@ class _DashboardInfoPagerState extends State<_DashboardInfoPager> {
   }
 }
 
-class _DashboardHorizontalPager extends StatelessWidget {
-  final int coins;
+class DashboardHorizontalPager extends StatelessWidget {
+  final double co2Value;
   final int steps;
   final int stepTarget;
   final double distance;
@@ -1417,8 +1519,10 @@ class _DashboardHorizontalPager extends StatelessWidget {
   final bool isDark;
   final PageController controller;
   final ValueChanged<int> onPageChanged;
-  const _DashboardHorizontalPager({
-    required this.coins,
+  final double? width;
+  final bool useMargin;
+  const DashboardHorizontalPager({
+    required this.co2Value,
     required this.steps,
     required this.stepTarget,
     required this.distance,
@@ -1426,63 +1530,35 @@ class _DashboardHorizontalPager extends StatelessWidget {
     required this.isDark,
     required this.controller,
     required this.onPageChanged,
+    this.width,
+    this.useMargin = true,
   });
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
+    final effectiveWidth = width ?? MediaQuery.of(context).size.width;
     final topHeight = 300.0;
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final cardColor = isDark
+        ? const Color(0xFF232B4D)
+        : const Color(0xFF3A53A4);
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-      elevation: 6,
-      color: const Color(0xFF183D23),
+      margin: useMargin
+          ? const EdgeInsets.symmetric(horizontal: 16, vertical: 16)
+          : EdgeInsets.zero,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(32)),
+      elevation: 8,
+      color: cardColor,
       child: SizedBox(
+        width: effectiveWidth,
         height: 300,
         child: PageView(
           controller: controller,
           onPageChanged: onPageChanged,
           children: [
-            // Page 1: Dummy data
-            Container(
-              width: screenWidth,
-              height: topHeight,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(36),
-                  bottomRight: Radius.circular(36),
-                ),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.dashboard, size: 60, color: Colors.green),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Welcome!',
-                      style: GoogleFonts.poppins(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'This is a dummy page. Swipe to see your stats.',
-                      style: GoogleFonts.poppins(
-                        fontSize: 16,
-                        color: Colors.black54,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
-                ),
-              ),
-            ),
             // Page 2: Big circle and stats (no vertical scroll)
             Container(
-              width: screenWidth,
+              width: effectiveWidth,
               height: topHeight,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -1491,22 +1567,22 @@ class _DashboardHorizontalPager extends StatelessWidget {
                   Padding(
                     padding: const EdgeInsets.only(left: 16, right: 8),
                     child: SizedBox(
-                      width: 120,
-                      height: 120,
+                      width: 200,
+                      height: 200,
                       child: Stack(
                         alignment: Alignment.center,
                         children: [
                           CircularPercentIndicator(
-                            radius: 60,
-                            lineWidth: 8,
-                            percent: (coins / 50).clamp(0.0, 1.0),
+                            radius: 90,
+                            lineWidth: 12,
+                            percent: (co2Value / 50).clamp(0.0, 1.0),
                             backgroundColor: Colors.white12,
-                            progressColor: Colors.greenAccent,
+                            progressColor: Colors.lightBlueAccent,
                             circularStrokeCap: CircularStrokeCap.round,
                           ),
                           CircularPercentIndicator(
-                            radius: 50,
-                            lineWidth: 8,
+                            radius: 75,
+                            lineWidth: 12,
                             percent: (steps / stepTarget).clamp(0.0, 1.0),
                             backgroundColor: Colors.white24,
                             progressColor: Colors.white,
@@ -1517,7 +1593,7 @@ class _DashboardHorizontalPager extends StatelessWidget {
                                 Text(
                                   '${steps}',
                                   style: GoogleFonts.poppins(
-                                    fontSize: 22,
+                                    fontSize: 32,
                                     fontWeight: FontWeight.bold,
                                     color: Colors.white,
                                   ),
@@ -1525,7 +1601,7 @@ class _DashboardHorizontalPager extends StatelessWidget {
                                 Text(
                                   'of ${stepTarget}',
                                   style: GoogleFonts.poppins(
-                                    fontSize: 10,
+                                    fontSize: 14,
                                     color: Colors.white70,
                                   ),
                                 ),
@@ -1534,19 +1610,18 @@ class _DashboardHorizontalPager extends StatelessWidget {
                           ),
                           // Coin icon at top center of outer circle
                           Positioned(
-                            top: 0,
+                            top: 9,
                             left: 0,
                             right: 0,
                             child: Center(
                               child: Container(
-                                padding: const EdgeInsets.all(2),
                                 decoration: BoxDecoration(
-                                  color: Colors.greenAccent,
-                                  borderRadius: BorderRadius.circular(12),
+                                  color: Colors.lightBlueAccent,
+                                  borderRadius: BorderRadius.circular(10),
                                 ),
                                 child: Icon(
-                                  Icons.attach_money,
-                                  size: 10,
+                                  Icons.eco,
+                                  size: 14,
                                   color: Colors.black,
                                 ),
                               ),
@@ -1554,35 +1629,34 @@ class _DashboardHorizontalPager extends StatelessWidget {
                           ),
                           // Shoe icon at top center of inner circle
                           Positioned(
-                            top: 14,
+                            top: 26,
                             left: 0,
                             right: 0,
                             child: Center(
                               child: Container(
-                                padding: const EdgeInsets.all(2),
                                 decoration: BoxDecoration(
                                   color: Colors.white,
-                                  borderRadius: BorderRadius.circular(10),
+                                  borderRadius: BorderRadius.circular(8),
                                 ),
                                 child: Icon(
                                   Icons.directions_walk,
-                                  size: 5,
+                                  size: 12,
                                   color: Colors.black,
                                 ),
                               ),
                             ),
                           ),
                           // Checkmark at end of coin arc if coins target achieved
-                          if (coins >= 50)
+                          if (co2Value >= 50)
                             _ArcEndCheckmark(
-                              radius: 60,
+                              radius: 90,
                               percent: 1.0,
-                              color: Colors.greenAccent,
+                              color: Colors.lightBlueAccent,
                             ),
                           // Checkmark at end of step arc if step target achieved
                           if (steps >= stepTarget)
                             _ArcEndCheckmark(
-                              radius: 50,
+                              radius: 75,
                               percent: 1.0,
                               color: Colors.white,
                             ),
@@ -1593,7 +1667,7 @@ class _DashboardHorizontalPager extends StatelessWidget {
                   // Stats on the right
                   Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.only(right: 16, left: 8),
+                      padding: const EdgeInsets.only(right: 16, left: 2),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1601,25 +1675,34 @@ class _DashboardHorizontalPager extends StatelessWidget {
                           Row(
                             children: [
                               Icon(
-                                Icons.attach_money,
-                                color: Colors.greenAccent,
-                                size: 18,
+                                Icons.eco,
+                                color: Colors.lightBlueAccent,
+                                size: 21,
                               ),
                               const SizedBox(width: 6),
-                              Text(
-                                '${coins}',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.greenAccent,
-                                ),
-                              ),
-                              const SizedBox(width: 4),
-                              Text(
-                                'coins',
-                                style: GoogleFonts.poppins(
-                                  fontSize: 12,
-                                  color: Colors.white,
+                              Expanded(
+                                child: RichText(
+                                  text: TextSpan(
+                                    children: [
+                                      TextSpan(
+                                        text: '${co2Value}',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.lightBlueAccent,
+                                        ),
+                                      ),
+                                      TextSpan(
+                                        text: ' CO₂',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.normal,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                             ],
@@ -1630,7 +1713,7 @@ class _DashboardHorizontalPager extends StatelessWidget {
                               Icon(
                                 Icons.location_on,
                                 color: Colors.purpleAccent,
-                                size: 18,
+                                size: 21,
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -1645,7 +1728,7 @@ class _DashboardHorizontalPager extends StatelessWidget {
                               Text(
                                 'km',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 12,
+                                  fontSize: 13,
                                   color: Colors.white,
                                 ),
                               ),
@@ -1657,7 +1740,7 @@ class _DashboardHorizontalPager extends StatelessWidget {
                               Icon(
                                 Icons.local_fire_department,
                                 color: Colors.orangeAccent,
-                                size: 18,
+                                size: 21,
                               ),
                               const SizedBox(width: 6),
                               Text(
@@ -1672,7 +1755,7 @@ class _DashboardHorizontalPager extends StatelessWidget {
                               Text(
                                 'cal',
                                 style: GoogleFonts.poppins(
-                                  fontSize: 12,
+                                  fontSize: 13,
                                   color: Colors.white,
                                 ),
                               ),
@@ -1686,15 +1769,8 @@ class _DashboardHorizontalPager extends StatelessWidget {
               ),
             ),
             // Page 3: Friends card (as in your screenshot)
-            Container(
-              width: screenWidth,
-              height: topHeight,
-              decoration: BoxDecoration(
-                color: Colors.green[900]?.withOpacity(0.95),
-                borderRadius: BorderRadius.circular(18),
-              ),
-              margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              padding: const EdgeInsets.all(18),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 18),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -1760,24 +1836,27 @@ class _DashboardHorizontalPager extends StatelessWidget {
 }
 
 // Dots indicator widget
-class _DashboardPagerDots extends StatelessWidget {
+class DashboardPagerDots extends StatelessWidget {
   final int page;
-  const _DashboardPagerDots({required this.page});
+  const DashboardPagerDots({required this.page});
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    final activeDotColor = isDark ? Color(0xFF6C7CB2) : Color(0xFFB3C7F7);
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: List.generate(
-          3,
+          2,
           (i) => Padding(
             padding: const EdgeInsets.symmetric(horizontal: 4),
             child: Container(
               width: 10,
               height: 10,
               decoration: BoxDecoration(
-                color: page == i ? Colors.greenAccent : Colors.white24,
+                color: page == i ? activeDotColor : Colors.white24,
                 shape: BoxShape.circle,
               ),
             ),

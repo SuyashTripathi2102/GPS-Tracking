@@ -169,12 +169,14 @@ class _SignupScreenState extends State<SignupScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
-                  Icons.person_add_alt_1,
-                  size: 54,
-                  color: theme.colorScheme.primary,
+                Image.asset(
+                  'assets/images/logo_dark.png',
+                  width: 220,
+                  height: 120,
+                  fit: BoxFit.contain,
+                  // No color filter, use original logo colors
                 ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 8),
                 Text(
                   'Create Account',
                   style: TextStyle(
@@ -245,7 +247,7 @@ class _SignupScreenState extends State<SignupScreen> {
                   child: ElevatedButton(
                     onPressed: _signup,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: theme.colorScheme.primary,
+                      backgroundColor: Color(0xFFF44336),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -275,7 +277,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       fontSize: 14,
-                      color: theme.colorScheme.primary,
+                      color: Color(0xFFF44336),
                       fontWeight: FontWeight.w500,
                     ),
                   ),

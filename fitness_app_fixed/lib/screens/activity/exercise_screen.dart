@@ -147,7 +147,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
             _currentPosition = newPoint;
           });
           if (_mapReady) {
-          _mapController.move(newPoint, _mapController.camera.zoom);
+            _mapController.move(newPoint, _mapController.camera.zoom);
           }
         });
   }
@@ -158,8 +158,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
     return '$m:$s';
   }
 
-  double get _coins =>
-      (_distance / 1000) * 1.25; // 1000 steps = 1.25 coins (example)
+  double get co2Value => _distance * 0.21; // Example: 0.21 kg CO2 per km
 
   Widget _compassButton(String label, double degrees) {
     return Padding(
@@ -213,13 +212,13 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
               SizedBox(
                 height: 260,
                 child: Stack(
-        children: [
-          FlutterMap(
-            mapController: _mapController,
-            options: MapOptions(
+                  children: [
+                    FlutterMap(
+                      mapController: _mapController,
+                      options: MapOptions(
                         initialCenter:
                             _currentPosition ?? LatLng(35.8997, 14.5146),
-              initialZoom: 15.0,
+                        initialZoom: 15.0,
                         onMapReady: () {
                           setState(() {
                             _mapReady = true;
@@ -230,40 +229,40 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                             _mapRotation = pos.rotation;
                           });
                         },
-            ),
-            children: [
-              TileLayer(
-                urlTemplate:
-                    'https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
-              ),
-              if (_currentPosition != null)
-                MarkerLayer(
-                  markers: [
-                    Marker(
-                      point: _currentPosition!,
-                      width: 48,
-                      height: 48,
-                      child: Image.asset(
-                        'assets/icons/pin.png',
-                        width: 40,
-                        height: 40,
-                        fit: BoxFit.contain,
                       ),
+                      children: [
+                        TileLayer(
+                          urlTemplate:
+                              'https://a.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png',
+                        ),
+                        if (_currentPosition != null)
+                          MarkerLayer(
+                            markers: [
+                              Marker(
+                                point: _currentPosition!,
+                                width: 48,
+                                height: 48,
+                                child: Image.asset(
+                                  'assets/icons/pin.png',
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.contain,
+                                ),
+                              ),
+                            ],
+                          ),
+                        if (_pathPoints.length > 1)
+                          PolylineLayer(
+                            polylines: [
+                              Polyline(
+                                points: _pathPoints,
+                                strokeWidth: 4,
+                                color: Colors.deepPurple,
+                              ),
+                            ],
+                          ),
+                      ],
                     ),
-                  ],
-                ),
-              if (_pathPoints.length > 1)
-                PolylineLayer(
-                  polylines: [
-                    Polyline(
-                      points: _pathPoints,
-                      strokeWidth: 4,
-                      color: Colors.deepPurple,
-                    ),
-                  ],
-                ),
-            ],
-          ),
                     // Compass overlay (custom needle)
                     Positioned(
                       top: 16,
@@ -297,20 +296,20 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                       ),
                     ),
                     // Map controls (tracker/device, center location)
-          Positioned(
+                    Positioned(
                       top: 16,
-            right: 16,
-            child: Column(
-              children: [
-                IconButton(
-                  icon: Image.asset(
-                    'assets/icons/tablet-android.png',
-                    width: 32,
-                    height: 32,
-                    errorBuilder: (context, error, stackTrace) =>
-                        Icon(Icons.watch, size: 28),
-                  ),
-                  onPressed: () {
+                      right: 16,
+                      child: Column(
+                        children: [
+                          IconButton(
+                            icon: Image.asset(
+                              'assets/icons/tablet-android.png',
+                              width: 32,
+                              height: 32,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(Icons.watch, size: 28),
+                            ),
+                            onPressed: () {
                               showDialog(
                                 context: context,
                                 builder: (context) {
@@ -397,79 +396,79 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                                   );
                                 },
                               );
-                  },
-                  tooltip: 'Tracker',
-                ),
-                const SizedBox(height: 12),
-                IconButton(
-                  icon: Image.asset(
-                    'assets/icons/gps-tracker.png',
-                    width: 32,
-                    height: 32,
-                    errorBuilder: (context, error, stackTrace) =>
-                        Icon(Icons.my_location, size: 28),
-                  ),
-                  onPressed: () {
-                    if (_currentPosition != null) {
-                      _mapController.move(_currentPosition!, 15.0);
-                    }
-                  },
-                  tooltip: 'Center on my location',
-                ),
-              ],
-            ),
-          ),
+                            },
+                            tooltip: 'Tracker',
+                          ),
+                          const SizedBox(height: 12),
+                          IconButton(
+                            icon: Image.asset(
+                              'assets/icons/gps-tracker.png',
+                              width: 32,
+                              height: 32,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(Icons.my_location, size: 28),
+                            ),
+                            onPressed: () {
+                              if (_currentPosition != null) {
+                                _mapController.move(_currentPosition!, 15.0);
+                              }
+                            },
+                            tooltip: 'Center on my location',
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
               // Dashboard section
               Padding(
                 padding: const EdgeInsets.only(top: 8),
-              child: Column(
-                children: [
-                  // Tabs
+                child: Column(
+                  children: [
+                    // Tabs
                     Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 16,
                         vertical: 16,
                       ),
                       child: Row(
-                    children: [
+                        children: [
                           _modeTab(
-                          icon: Icons.directions_walk,
-                          label: 'Walk',
-                          selected: _mode == 'Walk',
+                            icon: Icons.directions_walk,
+                            label: 'Walk',
+                            selected: _mode == 'Walk',
                             color: pastelGreen,
-                          onTap: () => setState(() => _mode = 'Walk'),
-                        ),
+                            onTap: () => setState(() => _mode = 'Walk'),
+                          ),
                           const SizedBox(width: 8),
                           _modeTab(
-                          icon: Icons.directions_run,
-                          label: 'Run',
-                          selected: _mode == 'Run',
+                            icon: Icons.directions_run,
+                            label: 'Run',
+                            selected: _mode == 'Run',
                             color: pastelRed,
-                          onTap: () => setState(() => _mode = 'Run'),
-                        ),
+                            onTap: () => setState(() => _mode = 'Run'),
+                          ),
                           const SizedBox(width: 8),
                           _modeTab(
-                          icon: Icons.directions_bike,
-                          label: 'Cycle',
-                          selected: _mode == 'Cycle',
+                            icon: Icons.directions_bike,
+                            label: 'Cycle',
+                            selected: _mode == 'Cycle',
                             color: pastelBlue,
-                          onTap: () => setState(() => _mode = 'Cycle'),
-                        ),
+                            onTap: () => setState(() => _mode = 'Cycle'),
+                          ),
                         ],
                       ),
-                  ),
-                  // Stats
+                    ),
+                    // Stats
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
+                        children: [
                           _statCard(
                             value: (_distance / 1000).toStringAsFixed(2),
-                        label: 'Kilometers',
+                            label: 'Kilometers',
                             color: pastelGreen,
                           ),
                           _statCard(
@@ -478,10 +477,10 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                             color: pastelRed,
                           ),
                           _statCard(
-                        value: _coins.toStringAsFixed(2),
-                            label: 'Coins Earned',
-                            color: pastelGreen,
-                            icon: Icons.emoji_events,
+                            value: co2Value.toStringAsFixed(2),
+                            label: 'kg CO₂',
+                            color: Colors.lightBlueAccent,
+                            icon: Icons.eco,
                           ),
                         ],
                       ),
@@ -500,18 +499,18 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                             BoxShadow(
                               color: Colors.black.withOpacity(0.04),
                               blurRadius: 4,
-                      ),
-                    ],
-                  ),
+                            ),
+                          ],
+                        ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                  Text(
+                            Text(
                               '${(_distance * 1.312).toInt()}',
-                    style: TextStyle(
+                              style: TextStyle(
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w700,
-                      fontSize: 48,
+                                fontSize: 48,
                                 color: _mode == 'Walk'
                                     ? pastelGreen
                                     : _mode == 'Run'
@@ -542,7 +541,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                             const SizedBox(height: 8),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
+                              children: [
                                 Icon(
                                   Icons.circle,
                                   size: 10,
@@ -585,7 +584,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                         children: [
                           Column(
                             children: [
-                      GestureDetector(
+                              GestureDetector(
                                 onTap: () {},
                                 child: Container(
                                   width: 64,
@@ -602,7 +601,7 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                                       color: isDark
                                           ? Colors.grey[400]
                                           : Colors.grey[700],
-                                size: 32,
+                                      size: 32,
                                     ),
                                   ),
                                 ),
@@ -681,9 +680,9 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                                         color: Colors.white,
                                         size: 32,
                                       ),
-                          ),
-                        ),
-                      ),
+                                    ),
+                                  ),
+                                ),
                                 const SizedBox(height: 6),
                                 Text(
                                   'END',
@@ -693,11 +692,11 @@ class _ExerciseScreenState extends State<ExerciseScreen> {
                                     fontSize: 15,
                                     color: pastelRed,
                                   ),
+                                ),
+                              ],
+                            ),
+                        ],
                       ),
-                    ],
-                  ),
-                ],
-              ),
                     ),
                     const SizedBox(height: 18),
                     // Motivational Text

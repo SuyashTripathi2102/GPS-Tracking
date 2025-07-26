@@ -13,6 +13,7 @@ import 'screens/onboarding/theme_screen.dart';
 import 'screens/devices/device_screen.dart';
 import 'screens/devices/bluetooth_scan_page.dart';
 import 'theme/theme.dart';
+import 'screens/home/splash_screen.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -44,7 +45,7 @@ class MyApp extends StatelessWidget {
       theme: CustomTheme.lightTheme,
       darkTheme: CustomTheme.darkTheme,
       themeMode: themeProvider.themeMode,
-      home: const OnboardingWrapper(),
+      home: const SplashScreen(),
       routes: {
         '/login': (context) => const OnboardingWrapper(),
         '/signup': (context) => const SignupScreen(),

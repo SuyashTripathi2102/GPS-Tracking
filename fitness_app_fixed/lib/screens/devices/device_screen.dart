@@ -291,17 +291,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
               const SizedBox(height: 18),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    _availableSlotCard(theme, fadedIcon, fadedText),
-                    const SizedBox(height: 12),
-                    _availableSlotCard(theme, fadedIcon, fadedText),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 18),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Row(
                   children: [
                     Icon(
